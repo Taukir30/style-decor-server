@@ -33,6 +33,7 @@ async function run() {
 
         //getting the table/collection
         const serviceCollection = db.collection('services');
+        const coverageAreas = db.collection('coverage');
 
 
         //service APIs----------
@@ -59,6 +60,19 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
+
+
+        //Coverage area APIs
+            //read
+        app.get('/coverageareas', async (req, res) => {
+
+            const cursor = coverageAreas.find().sort({ created_at: -1 });
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+
+
 
 
 
