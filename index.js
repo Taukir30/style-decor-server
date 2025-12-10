@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors');
 const app = express();
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const port = process.env.PORT || 3000
 
@@ -33,7 +33,8 @@ async function run() {
 
         //getting the table/collection
         const serviceCollection = db.collection('services');
-        const coverageAreas = db.collection('coverage');
+        const coverageCollection = db.collection('coverage');
+        const bookingCollection = db.collection('booking');
 
 
         //service APIs----------
@@ -61,13 +62,43 @@ async function run() {
             res.send(result);
         })
 
+            //services details read api
+        app.get('/service/:id', async (req, res) => {
+            const id = req.params.id;
 
-        //Coverage area APIs
+            if(!/^[a-fA-F0-9]{24}$/.test(id)){
+                res.send({})
+            }
+
+            const query = { _id: new ObjectId(id) };
+            // const query = { _id: id };
+            const result = await serviceCollection.findOne(query);
+            res.send(result);
+        })
+
+
+        //Booking APIs------------------
+            //create
+        app.post('/addbooking', async (req, res) => {
+            const newBooking = req.body;
+            const result = await bookingCollection.insertOne(newBooking);
+            res.send(result);
+        })
+
+
+        //Coverage area APIs--------------
             //read
-        app.get('/coverageareas', async (req, res) => {
+        app.get('/coverage', async (req, res) => {
 
-            const cursor = coverageAreas.find().sort({ created_at: -1 });
+            const cursor = coverageCollection.find().sort({ created_at: -1 });
             const result = await cursor.toArray();
+            res.send(result);
+        })
+
+            //create
+        app.post('/addcoverage', async (req, res) => {
+            const newCoverageArea = req.body;
+            const result = await coverageCollection.insertOne(newCoverageArea);
             res.send(result);
         })
 
