@@ -85,6 +85,27 @@ async function run() {
             res.send(result);
         })
 
+            //all bookings or bookings by email
+        app.get('/allbookings', async (req, res) => {
+            const email = req.query.email;
+            const query = {};
+            if (email) {
+                query.email = email;
+            }
+            const cursor = bookingCollection.find(query).sort({ created_at: -1 });
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+         //delete api
+        app.delete('/deletebooking/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            
+            const result = await bookingCollection.deleteOne(query);
+            res.send(result);
+        })
+
 
         //Coverage area APIs--------------
             //read
