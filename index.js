@@ -160,12 +160,34 @@ async function run() {
                 metadata: {
                     bookingId: paymentInfo.bookingId
                 },
-                success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success`,
+                success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${process.env.SITE_DOMAIN}/dashboard/payment-cancelled`,
             })
 
             console.log(session);
             res.send({ url: session.url })
+        })
+
+            //payment success check api
+        app.patch('/payment-success', async (req, res) => {
+            const sessionId = req.query.session_id;
+            const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+            console.log('session:', session);
+
+            if(session.payment_status === 'paid'){
+                const id = session.metadata.bookingId;
+                const query = { _id: new ObjectId(id) }
+                const update = {
+                    $set: {
+                        paymentStatus: 'paid',
+                    }
+                }
+
+                const result = await bookingCollection.updateOne(query, update);
+                res.send(result);
+            }
+
+            res.send({success: true})
         })
 
 
