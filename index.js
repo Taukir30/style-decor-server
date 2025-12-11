@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const stripe = require('stripe')('process.env.STRIP_SECRET');
+const stripe = require('stripe')(process.env.STRIP_SECRET);
 
 const port = process.env.PORT || 3000
 
@@ -155,7 +155,7 @@ async function run() {
                         quantity: 1,
                     },
                 ],
-                customer_email: paymentInfo.email,
+                customer_email: paymentInfo.customerEmail,
                 mode: 'payment',
                 metadata: {
                     bookingId: paymentInfo.bookingId
