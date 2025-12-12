@@ -32,7 +32,8 @@ function generateTrackingId() {
 app.use(express.json());
 app.use(cors());
 
-const verifyFBToken = async (req, res, next) => {                           //token verification middleware
+//middleware for token verification
+const verifyFBToken = async (req, res, next) => {
     // console.log('header in the middleware', req.headers.authorization)
     const token = req.headers.authorization;
 
@@ -76,11 +77,27 @@ async function run() {
         const db = client.db('style_decor_db');
 
         //getting the table/collection
+        const userCollection = db.collection('users');
         const serviceCollection = db.collection('services');
         const coverageCollection = db.collection('coverage');
         const bookingCollection = db.collection('booking');
         const paymentCollection = db.collection('payments');
 
+        //user related apis
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            user.role = 'user';
+            user.createdAt = new Date();
+            const email = user.email;
+            const userExists = await userCollection.findOne({email});
+
+            if(userExists) {
+                return res.send({ message: 'user exists' })
+            }
+
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+        })
 
         //service APIs----------
         //create
@@ -224,7 +241,7 @@ async function run() {
             const paymentExist = await paymentCollection.findOne(query);
 
             if (paymentExist) {
-                return res.send({ message: 'already exists', transactionId });
+                return res.send({ message: 'already exists', transactionId, trackingId: paymentExist.trackingId });
             }
 
             const trackingId = generateTrackingId();
@@ -287,7 +304,7 @@ async function run() {
                     return res.status(403).send({ message: 'forbidden access' });
                 }
             }
-            const cursor = paymentCollection.find(query);
+            const cursor = paymentCollection.find(query).sort({paidAt: -1});
             const result = await cursor.toArray();
             res.send(result);
         })
