@@ -122,6 +122,20 @@ async function run() {
             res.send(result);
         })
 
+            //get single user
+        app.get('/users/:id', async (req, res) => {
+
+        })
+
+            //get user role
+        app.get('/users/:email/role', async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await userCollection.findOne( query );
+            res.send({ role: user?.role || 'user'})
+        })
+
+
         //service APIs----------
         //create
         app.post('/addservice', async (req, res) => {
@@ -312,7 +326,7 @@ async function run() {
         })
 
 
-        //payment read all by email
+        //payment read all or by email
         app.get('/payments', verifyFBToken, async (req, res) => {
             const email = req.query.email;
             const query = {}
