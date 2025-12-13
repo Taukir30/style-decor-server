@@ -85,6 +85,7 @@ async function run() {
         const decoratorCollection = db.collection('decorators');
 
         //user related apis
+            //create
         app.post('/users', async (req, res) => {
             const user = req.body;
             user.role = 'user';
@@ -97,6 +98,27 @@ async function run() {
             }
 
             const result = await userCollection.insertOne(user);
+            res.send(result);
+        })
+
+            //get user
+        app.get('/users', verifyFBToken, async (req, res) => {
+            const cursor = userCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+            //user admin role toggle
+        app.patch('/users/:id', verifyFBToken, async (req,res) => {
+            const id = req.params.id;
+            const roleInfo = req.body;
+            const query = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    role: roleInfo.role
+                }
+            }
+            const result = await userCollection.updateOne(query, updatedDoc)
             res.send(result);
         })
 
