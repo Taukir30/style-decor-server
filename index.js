@@ -334,6 +334,41 @@ async function run() {
             res.send(result);
         })
 
+            //update decorators
+        app.patch('/decorators/:id', verifyFBToken, async (req, res) => {
+            const status = req.body.status;
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    status: status
+                }
+            }
+
+            const result = await decoratorCollection.updateOne(query, updatedDoc);
+
+            if(status === 'approved') {
+                const email = req.body.email;
+                const userQuery = { email };
+                const updateUser = {
+                    $set: {
+                        role: 'decorator'
+                    }
+                }
+                const userResult = await userCollection.updateOne(userQuery, updateUser);
+            }
+            res.send(result);
+        })
+
+            //delete decorators
+        app.delete('/decorators/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const result = await decoratorCollection.deleteOne(query);
+            res.send(result);
+        })
+
 
 
 
