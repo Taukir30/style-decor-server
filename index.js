@@ -82,6 +82,7 @@ async function run() {
         const coverageCollection = db.collection('coverage');
         const bookingCollection = db.collection('booking');
         const paymentCollection = db.collection('payments');
+        const decoratorCollection = db.collection('decorators');
 
         //user related apis
         app.post('/users', async (req, res) => {
@@ -305,6 +306,30 @@ async function run() {
                 }
             }
             const cursor = paymentCollection.find(query).sort({paidAt: -1});
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        
+        //decoratior related apis--------------
+            //create
+        app.post('/decorators', async( req, res ) => {
+            const decorator = req.body;
+            decorator.status = 'pending';
+            decorator.createdAt = new Date();
+            // decorator.isAvailable = true;
+
+            const result = await decoratorCollection.insertOne(decorator);
+            res.send(result)
+        })
+
+            //read all or pending decorators
+        app.get('/alldecorators', async (req, res) => {
+            const query = {}
+            if(req.query.status) {
+                query.status = req.query.status;
+            }
+            const cursor = decoratorCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
         })
