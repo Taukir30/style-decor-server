@@ -83,6 +83,7 @@ async function run() {
         const bookingCollection = db.collection('booking');
         const paymentCollection = db.collection('payments');
         const decoratorCollection = db.collection('decorators');
+        const categoryCollection = db.collection('categories');
 
         //user related apis
             //create
@@ -136,6 +137,32 @@ async function run() {
         })
 
 
+        //category APIs----------------
+        //create
+        app.post('/addcategory', async (req, res) => {
+            const newCategory = req.body;
+            const result = await categoryCollection.insertOne(newCategory);
+            res.send(result);
+        })
+
+            //all categorys
+        app.get('/allcategory', async (req, res) => {
+
+            const cursor = categoryCollection.find().sort({ created_at: -1 });
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+            //delete
+        app.delete('/category/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const result = await categoryCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
         //service APIs----------
         //create
         app.post('/addservice', async (req, res) => {
@@ -144,7 +171,7 @@ async function run() {
             res.send(result);
         })
 
-        //read api all services or services by email
+        //read api all services
         app.get('/allservices', async (req, res) => {
 
             const cursor = serviceCollection.find().sort({ created_at: -1 });
@@ -172,6 +199,15 @@ async function run() {
             const query = { _id: new ObjectId(id) };
             // const query = { _id: id };
             const result = await serviceCollection.findOne(query);
+            res.send(result);
+        })
+
+            //delete
+        app.delete('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const result = await serviceCollection.deleteOne(query);
             res.send(result);
         })
 
