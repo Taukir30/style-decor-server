@@ -222,11 +222,17 @@ async function run() {
 
         //all bookings or bookings by email
         app.get('/allbookings', async (req, res) => {
-            const email = req.query.email;
+            const {email, status} = req.query;
             const query = {};
+
             if (email) {
                 query.email = email;
             }
+
+            if (status) {
+                query.status = status;
+            }
+
             const cursor = bookingCollection.find(query).sort({ created_at: -1 });
             const result = await cursor.toArray();
             res.send(result);
@@ -395,12 +401,21 @@ async function run() {
             res.send(result)
         })
 
-            //read all or pending decorators
+            //read all or avaiable decorators
         app.get('/alldecorators', async (req, res) => {
+            const {status, location, workStatus} = req.query;
             const query = {}
-            if(req.query.status) {
-                query.status = req.query.status;
+            
+            if(status) {
+                query.status = status;
             }
+            if(location) {
+                query.location = location;
+            }
+            if(workStatus) {
+                query.workStatus = workStatus;
+            }
+
             const cursor = decoratorCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
@@ -413,7 +428,8 @@ async function run() {
             const query = { _id: new ObjectId(id) };
             const updatedDoc = {
                 $set: {
-                    status: status
+                    status: status,
+                    workStatus: 'available'
                 }
             }
 
