@@ -251,6 +251,35 @@ async function run() {
             res.send(result);
         })
 
+        //edit booking for assign decorator
+        app.patch('/booking/:id', async (req, res) => {
+            const { decoratorId, decoratorEmail, decoratorName } = req.body;
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const updatedDoc = {
+                $set: {
+                    status: 'assigned',
+                    decoratorId: decoratorId,
+                    decoratorName: decoratorName,
+                    decoratorEmail: decoratorEmail
+                }
+            }
+
+            const result = await bookingCollection.updateOne(query, updatedDoc)     //update booking collection
+
+                //update decorator information
+            const decoratorQuery = { _id: new ObjectId(decoratorId)};
+            const decoratorUpdatedDoc = {
+                $set: {
+                    workStatus: 'in_project'
+                }
+            }
+            const decoratorResult = await decoratorCollection.updateOne(decoratorQuery, decoratorUpdatedDoc);
+            
+            res.send(decoratorResult);
+        })
+
         //delete api
         app.delete('/deletebooking/:id', async (req, res) => {
             const id = req.params.id;
