@@ -238,7 +238,7 @@ async function run() {
             res.send(result);
         })
 
-        //booking by decorator
+        //read booking by decorator
         app.get('/booking/decorator', async (req, res) => {
             const { decoratorEmail, status } = req.query;
             const query = {};
@@ -246,8 +246,12 @@ async function run() {
                 query.decoratorEmail = decoratorEmail
             }
             if (status) {
-                // query.status = {$in: ['assigned', 'planning phase', 'materials prepared', 'on the way to venue', 'setup in progress']}
-                query.status = { $nin: ['completed'] }
+                if (status !== 'completed') {
+                    // query.status = {$in: ['assigned', 'planning phase', 'materials prepared', 'on the way to venue', 'setup in progress']}
+                    query.status = { $nin: ['completed'] }
+                }else{
+                    query.status = status;
+                }
             }
 
             const cursor = bookingCollection.find(query)
