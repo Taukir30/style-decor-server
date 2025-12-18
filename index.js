@@ -238,6 +238,22 @@ async function run() {
             res.send(result);
         })
 
+        //booking by decorator
+        app.get('/booking/decorator', async (req, res) => {
+            const { decoratorEmail, status } = req.query;
+            const query = {};
+            if (decoratorEmail) {
+                query.decoratorEmail = decoratorEmail
+            }
+            if (status) {
+                query.status = {$in: ['assigned', 'planning phase', 'materials prepared', 'on the way to venue', 'setup in progress']}
+            }
+
+            const cursor = bookingCollection.find(query)
+            const result = await cursor.toArray()
+            res.send(result);
+        })
+
         //booking details read api
         app.get('/booking/:id', async (req, res) => {
             const id = req.params.id;
@@ -278,6 +294,20 @@ async function run() {
             const decoratorResult = await decoratorCollection.updateOne(decoratorQuery, decoratorUpdatedDoc);
             
             res.send(decoratorResult);
+        })
+
+        //status update api
+        app.patch('/booking/:id/status', async (req, res) => {
+            const { status } = req.body;
+            const query = { _id: new ObjectId(req.params.id) };
+            const updatedDoc = {
+                $set: {
+                    status: status,
+                    updatedAt: new Date()
+                }
+            }
+            const result = await bookingCollection.updateOne(query, updatedDoc)
+            res.send(result);
         })
 
         //delete api
