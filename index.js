@@ -86,15 +86,15 @@ async function run() {
         const categoryCollection = db.collection('categories');
 
         //user related apis
-            //create
+        //create
         app.post('/users', async (req, res) => {
             const user = req.body;
             user.role = 'user';
             user.createdAt = new Date();
             const email = user.email;
-            const userExists = await userCollection.findOne({email});
+            const userExists = await userCollection.findOne({ email });
 
-            if(userExists) {
+            if (userExists) {
                 return res.send({ message: 'user exists' })
             }
 
@@ -102,15 +102,15 @@ async function run() {
             res.send(result);
         })
 
-            //get user
+        //get user
         app.get('/users', verifyFBToken, async (req, res) => {
             const cursor = userCollection.find();
             const result = await cursor.toArray();
             res.send(result);
         })
 
-            //user admin role toggle
-        app.patch('/users/:id', verifyFBToken, async (req,res) => {
+        //user admin role toggle
+        app.patch('/users/:id', verifyFBToken, async (req, res) => {
             const id = req.params.id;
             const roleInfo = req.body;
             const query = { _id: new ObjectId(id) };
@@ -123,17 +123,17 @@ async function run() {
             res.send(result);
         })
 
-            //get single user
+        //get single user
         app.get('/users/:id', async (req, res) => {
 
         })
 
-            //get user role
+        //get user role
         app.get('/users/:email/role', async (req, res) => {
             const email = req.params.email;
             const query = { email };
-            const user = await userCollection.findOne( query );
-            res.send({ role: user?.role || 'user'})
+            const user = await userCollection.findOne(query);
+            res.send({ role: user?.role || 'user' })
         })
 
 
@@ -145,7 +145,7 @@ async function run() {
             res.send(result);
         })
 
-            //all categorys
+        //all categorys
         app.get('/allcategory', async (req, res) => {
 
             const cursor = categoryCollection.find().sort({ created_at: -1 });
@@ -153,7 +153,7 @@ async function run() {
             res.send(result);
         })
 
-            //delete
+        //delete
         app.delete('/category/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
@@ -202,7 +202,7 @@ async function run() {
             res.send(result);
         })
 
-            //delete
+        //delete
         app.delete('/services/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
@@ -222,7 +222,7 @@ async function run() {
 
         //all bookings or bookings by email
         app.get('/allbookings', async (req, res) => {
-            const {email, status} = req.query;
+            const { email, status } = req.query;
             const query = {};
 
             if (email) {
@@ -246,7 +246,8 @@ async function run() {
                 query.decoratorEmail = decoratorEmail
             }
             if (status) {
-                query.status = {$in: ['assigned', 'planning phase', 'materials prepared', 'on the way to venue', 'setup in progress']}
+                // query.status = {$in: ['assigned', 'planning phase', 'materials prepared', 'on the way to venue', 'setup in progress']}
+                query.status = { $nin: ['completed'] }
             }
 
             const cursor = bookingCollection.find(query)
@@ -284,21 +285,21 @@ async function run() {
 
             const result = await bookingCollection.updateOne(query, updatedDoc)     //update booking collection
 
-                //update decorator information
-            const decoratorQuery = { _id: new ObjectId(decoratorId)};
+            //update decorator information
+            const decoratorQuery = { _id: new ObjectId(decoratorId) };
             const decoratorUpdatedDoc = {
                 $set: {
                     workStatus: 'in_project'
                 }
             }
             const decoratorResult = await decoratorCollection.updateOne(decoratorQuery, decoratorUpdatedDoc);
-            
+
             res.send(decoratorResult);
         })
 
         //status update api
         app.patch('/booking/:id/status', async (req, res) => {
-            const { status } = req.body;
+            const { status, decoratorId } = req.body;
             const query = { _id: new ObjectId(req.params.id) };
             const updatedDoc = {
                 $set: {
@@ -306,6 +307,18 @@ async function run() {
                     updatedAt: new Date()
                 }
             }
+
+            if (status === 'completed') {
+                //update decorator information
+                const decoratorQuery = { _id: new ObjectId(decoratorId) };
+                const decoratorUpdatedDoc = {
+                    $set: {
+                        workStatus: 'available'
+                    }
+                }
+                const decoratorResult = await decoratorCollection.updateOne(decoratorQuery, decoratorUpdatedDoc);
+            }
+
             const result = await bookingCollection.updateOne(query, updatedDoc)
             res.send(result);
         })
@@ -442,15 +455,15 @@ async function run() {
                     return res.status(403).send({ message: 'forbidden access' });
                 }
             }
-            const cursor = paymentCollection.find(query).sort({paidAt: -1});
+            const cursor = paymentCollection.find(query).sort({ paidAt: -1 });
             const result = await cursor.toArray();
             res.send(result);
         })
 
-        
+
         //decoratior related apis--------------
-            //create
-        app.post('/decorators', async( req, res ) => {
+        //create
+        app.post('/decorators', async (req, res) => {
             const decorator = req.body;
             decorator.status = 'pending';
             decorator.createdAt = new Date();
@@ -460,18 +473,18 @@ async function run() {
             res.send(result)
         })
 
-            //read all or avaiable decorators
+        //read all or avaiable decorators
         app.get('/alldecorators', async (req, res) => {
-            const {status, location, workStatus} = req.query;
+            const { status, location, workStatus } = req.query;
             const query = {}
-            
-            if(status) {
+
+            if (status) {
                 query.status = status;
             }
-            if(location) {
+            if (location) {
                 query.location = location;
             }
-            if(workStatus) {
+            if (workStatus) {
                 query.workStatus = workStatus;
             }
 
@@ -480,7 +493,7 @@ async function run() {
             res.send(result);
         })
 
-            //update decorators
+        //update decorators
         app.patch('/decorators/:id', verifyFBToken, async (req, res) => {
             const status = req.body.status;
             const id = req.params.id;
@@ -494,7 +507,7 @@ async function run() {
 
             const result = await decoratorCollection.updateOne(query, updatedDoc);
 
-            if(status === 'approved') {
+            if (status === 'approved') {
                 const email = req.body.email;
                 const userQuery = { email };
                 const updateUser = {
@@ -507,7 +520,7 @@ async function run() {
             res.send(result);
         })
 
-            //delete decorators
+        //delete decorators
         app.delete('/decorators/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
