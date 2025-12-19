@@ -102,10 +102,35 @@ async function run() {
             res.send(result);
         })
 
-        //get user
+        //get all users
         app.get('/users', verifyFBToken, async (req, res) => {
-            const cursor = userCollection.find();
+            const query = {}
+            const email = req.query.email;
+            if (email) {
+                query.email = email;
+            }
+            const cursor = userCollection.find(query);
             const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        //get single user
+        app.get('/users/:id', async (req, res) => {
+
+        })
+
+        //update user
+        app.patch('/users', verifyFBToken, async (req, res) => {
+            const email = req.query.email;
+            const displayName = req.body.displayName;
+            const query = { email: email };
+            const updatedDoc = {
+                $set: {
+                    displayName: displayName
+                }
+            }
+
+            const result = await userCollection.updateOne(query, updatedDoc);
             res.send(result);
         })
 
@@ -123,10 +148,6 @@ async function run() {
             res.send(result);
         })
 
-        //get single user
-        app.get('/users/:id', async (req, res) => {
-
-        })
 
         //get user role
         app.get('/users/:email/role', async (req, res) => {
@@ -249,7 +270,7 @@ async function run() {
                 if (status !== 'completed') {
                     // query.status = {$in: ['assigned', 'planning phase', 'materials prepared', 'on the way to venue', 'setup in progress']}
                     query.status = { $nin: ['completed'] }
-                }else{
+                } else {
                     query.status = status;
                 }
             }
