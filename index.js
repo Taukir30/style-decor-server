@@ -348,6 +348,28 @@ async function run() {
             res.send(result);
         })
 
+        //single booking update api
+        app.patch('/booking/:id/update', async (req, res) => {
+            const { location, address, servicePrice, serviceId, scheduleDate, unit, pricePerUnit, area} = req.body;
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const updatedDoc = {
+                $set: {
+                    location: location,
+                    address: address,
+                    servicePrice: servicePrice,
+                    serviceId: serviceId,
+                    scheduleDate: scheduleDate,
+                    unit: unit,
+                    pricePerUnit: pricePerUnit
+                }
+            }
+
+            const result = await bookingCollection.updateOne(query, updatedDoc)     //update booking collection
+            res.send(result);
+        })
+
         //delete api
         app.delete('/deletebooking/:id', async (req, res) => {
             const id = req.params.id;
