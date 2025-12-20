@@ -223,6 +223,27 @@ async function run() {
             res.send(result);
         })
 
+        //update Service package api
+        app.patch('/services/:id', verifyFBToken, async (req, res) => {
+            const id = req.params.id;
+            const {service_name, cost, unit, service_category, description,isPopular} = req.body;
+            const query = { _id: new ObjectId(id) };
+
+            const updatedDoc = {
+                $set: {
+                    service_name, 
+                    cost, 
+                    unit, 
+                    service_category, 
+                    description,
+                    isPopular
+                }
+            }
+
+            const result = await serviceCollection.updateOne(query, updatedDoc);
+            res.send(result);
+        })
+
         //delete
         app.delete('/services/:id', async (req, res) => {
             const id = req.params.id;
