@@ -350,7 +350,7 @@ async function run() {
 
         //single booking update api
         app.patch('/booking/:id/update', async (req, res) => {
-            const { location, address, servicePrice, serviceId, scheduleDate, unit, pricePerUnit, area} = req.body;
+            const { location, address, servicePrice, serviceId, scheduleDate, unit, pricePerUnit, area } = req.body;
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
 
@@ -539,16 +539,23 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
+        
 
-        //update decorators
-        app.patch('/decorators/:id', verifyFBToken, async (req, res) => {
+        //approve or disable decorators 
+        app.patch('/decorators/:id/approval', verifyFBToken, async (req, res) => {
             const status = req.body.status;
+            const decoratorWorkStatus = req.body.workStatus;
+            let workStatus = 'available';
+
+            if (decoratorWorkStatus) {
+                workStatus = decoratorWorkStatus
+            }
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const updatedDoc = {
                 $set: {
                     status: status,
-                    workStatus: 'available'
+                    workStatus: workStatus
                 }
             }
 
@@ -564,6 +571,25 @@ async function run() {
                 }
                 const userResult = await userCollection.updateOne(userQuery, updateUser);
             }
+            res.send(result);
+        })
+
+        //update decorator
+        app.patch('/decorators/:id', verifyFBToken, async (req, res) => {
+            const id = req.params.id;
+            const {location, address, experties, experience} = req.body;
+            const query = { _id: new ObjectId(id) };
+
+            const updatedDoc = {
+                $set: {
+                    location,
+                    address,
+                    experties,
+                    experience
+                }
+            }
+
+            const result = await decoratorCollection.updateOne(query, updatedDoc);
             res.send(result);
         })
 
