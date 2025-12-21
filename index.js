@@ -184,7 +184,7 @@ async function run() {
         })
 
 
-        //service APIs----------
+        //service APIs--------------------------------
         //create
         app.post('/addservice', async (req, res) => {
             const newService = req.body;
@@ -301,6 +301,15 @@ async function run() {
             res.send(result);
         })
 
+        //booking details by tracking id
+        app.get('/booking/details', async (req, res) => {
+            const trackingId = req.query.trackingId;
+            const query = { trackingId: trackingId };
+            const result = await bookingCollection.findOne(query);
+            res.send(result);
+            // console.log(trackingId)
+        })
+
         //booking details read api
         app.get('/booking/:id', async (req, res) => {
             const id = req.params.id;
@@ -313,6 +322,7 @@ async function run() {
             const result = await bookingCollection.findOne(query);
             res.send(result);
         })
+
 
         //edit booking for assign decorator
         app.patch('/booking/:id', async (req, res) => {
@@ -525,6 +535,14 @@ async function run() {
             }
             const cursor = paymentCollection.find(query).sort({ paidAt: -1 });
             const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        //payment get single
+        app.get('/payment/:id/receipt', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await paymentCollection.findOne(query);
             res.send(result);
         })
 
