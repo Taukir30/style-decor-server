@@ -226,15 +226,15 @@ async function run() {
         //update Service package api
         app.patch('/services/:id', verifyFBToken, async (req, res) => {
             const id = req.params.id;
-            const {service_name, cost, unit, service_category, description,isPopular} = req.body;
+            const { service_name, cost, unit, service_category, description, isPopular } = req.body;
             const query = { _id: new ObjectId(id) };
 
             const updatedDoc = {
                 $set: {
-                    service_name, 
-                    cost, 
-                    unit, 
-                    service_category, 
+                    service_name,
+                    cost,
+                    unit,
+                    service_category,
                     description,
                     isPopular
                 }
@@ -560,7 +560,7 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
-        
+
 
         //approve or disable decorators 
         app.patch('/decorators/:id/approval', verifyFBToken, async (req, res) => {
@@ -598,7 +598,7 @@ async function run() {
         //update decorator
         app.patch('/decorators/:id', verifyFBToken, async (req, res) => {
             const id = req.params.id;
-            const {location, address, experties, experience} = req.body;
+            const { location, address, experties, experience } = req.body;
             const query = { _id: new ObjectId(id) };
 
             const updatedDoc = {
@@ -622,6 +622,80 @@ async function run() {
             const result = await decoratorCollection.deleteOne(query);
             res.send(result);
         })
+
+
+        //statistical APIs-----------------------
+        //bookings by status
+        app.get('/bookings/status/stats', async (req, res) => {
+            const pipeline = [
+                {
+                    $group: {
+                        _id: '$status',
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $project: {
+                        name: '$_id',
+                        count: 1,
+                    }
+                }
+            ]
+            const result = await bookingCollection.aggregate(pipeline).toArray();
+            res.send(result);
+        })
+
+
+        //bookings by service
+        app.get('/bookings/service/stats', async (req, res) => {
+            const pipeline = [
+                {
+                    $group: {
+                        _id: '$serviceName',
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $project: {
+                        name: '$_id',
+                        count: 1,
+                    }
+                }
+            ]
+            const result = await bookingCollection.aggregate(pipeline).toArray();
+            res.send(result);
+        })
+
+        //total bookings profit
+        app.get('/bookings/revenue/total', async (req, res) => {
+            const pipeline = [
+                {
+                    $match: {
+                        paymentStatus: 'paid'
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: {
+                            $sum: {
+                                $toDouble: '$servicePrice'
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        totalRevenue: 1
+                    }
+                }
+            ];
+
+            const result = await bookingCollection.aggregate(pipeline).toArray();
+            res.send(result[0] || { totalRevenue: 0 });
+        });
+
 
 
 
