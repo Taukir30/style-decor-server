@@ -307,7 +307,7 @@ async function run() {
             const query = { trackingId: trackingId };
             const result = await bookingCollection.findOne(query);
             res.send(result);
-            // console.log(trackingId)
+        
         })
 
         //booking details read api
