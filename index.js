@@ -158,7 +158,7 @@ async function run() {
         })
 
 
-        //category APIs----------------
+        //category APIs----------------------------------------------------------
         //create
         app.post('/addcategory', async (req, res) => {
             const newCategory = req.body;
@@ -192,10 +192,16 @@ async function run() {
             res.send(result);
         })
 
-        //read api all services
+        //read api all services or search
         app.get('/allservices', async (req, res) => {
+            const searchText = req.query.searchText;
+            const query = {};
 
-            const cursor = serviceCollection.find().sort({ created_at: -1 });
+            if (searchText) {
+                query.service_name = {$regex: searchText, $options: 'i'}
+            }
+
+            const cursor = serviceCollection.find(query).sort({ created_at: -1 });
             const result = await cursor.toArray();
             res.send(result);
         })
