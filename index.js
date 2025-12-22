@@ -616,7 +616,7 @@ async function run() {
         //update decorator
         app.patch('/decorators/:id', verifyFBToken, async (req, res) => {
             const id = req.params.id;
-            const { location, address, experties, experience } = req.body;
+            const { location, address, experties, experience, rating } = req.body;
             const query = { _id: new ObjectId(id) };
 
             const updatedDoc = {
@@ -624,7 +624,8 @@ async function run() {
                     location,
                     address,
                     experties,
-                    experience
+                    experience,
+                    rating
                 }
             }
 
